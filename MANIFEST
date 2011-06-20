@@ -1,0 +1,16 @@
+Changes
+lib/Search/Query/Dialect/Lucy.pm
+lib/Search/Query/Dialect/Lucy/Compiler.pm
+lib/Search/Query/Dialect/Lucy/NOTWildcardQuery.pm
+lib/Search/Query/Dialect/Lucy/Scorer.pm
+lib/Search/Query/Dialect/Lucy/WildcardQuery.pm
+lib/Search/Query/Field/Lucy.pm
+Makefile.PL
+MANIFEST
+README
+t/00-load.t
+t/01-parser.t
+t/02-search.t
+t/pod-coverage.t
+t/pod.t
+META.yml                                 Module meta-data (added by MakeMaker)
