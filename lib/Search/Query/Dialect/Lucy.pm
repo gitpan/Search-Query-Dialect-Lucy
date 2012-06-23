@@ -17,7 +17,7 @@ use LucyX::Search::ProximityQuery;
 use LucyX::Search::NOTWildcardQuery;
 use LucyX::Search::WildcardQuery;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 __PACKAGE__->mk_accessors(
     qw(
@@ -106,7 +106,7 @@ sub init {
     if ( $self->{default_field} and !ref( $self->{default_field} ) ) {
         $self->{default_field} = [ $self->{default_field} ];
     }
-    
+
     $self->{debug} = 0 unless defined $self->{debug};
 
     return $self;
@@ -224,10 +224,18 @@ sub stringify_clause {
         = $self->default_field
         || $self->parser->default_field
         || undef;    # not empty string or 0
-    my @fields
-        = $clause->{field}
-        ? ( $clause->{field} )
-        : ( defined $default_field ? @$default_field : () );
+    my @fields;
+    if ( $clause->{field} ) {
+        @fields = ( $clause->{field} );
+    }
+    elsif ( defined $default_field ) {
+        if ( ref $default_field ) {
+            @fields = @$default_field;
+        }
+        else {
+            @fields = ($default_field);
+        }
+    }
 
     # what value
     my $value
@@ -428,10 +436,18 @@ sub _lucy_clause {
 
     # make sure we have a field
     my $default_field = $self->default_field || $self->parser->default_field;
-    my @fields
-        = $clause->{field}
-        ? ( $clause->{field} )
-        : ( defined $default_field ? @$default_field : () );
+    my @fields;
+    if ( $clause->{field} ) {
+        @fields = ( $clause->{field} );
+    }
+    elsif ( defined $default_field ) {
+        if ( ref $default_field ) {
+            @fields = @$default_field;
+        }
+        else {
+            @fields = ($default_field);
+        }
+    }
 
     # what value
     my $value
@@ -439,7 +455,7 @@ sub _lucy_clause {
         ? $clause->{value}
         : $self->_doctor_value($clause);
 
-    # if we have no fields, we can't proceed, because KS
+    # if we have no fields, we can't proceed, because Lucy
     # requires a field for every term.
     if ( !@fields ) {
         croak
