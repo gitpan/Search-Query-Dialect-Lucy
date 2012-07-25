@@ -4,7 +4,7 @@
       "Peter Karman <karman@cpan.org>"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "ExtUtils::MakeMaker version 6.62, CPAN::Meta::Converter version 2.120530",
+   "generated_by" : "ExtUtils::MakeMaker version 6.62, CPAN::Meta::Converter version 2.112150",
    "license" : [
       "perl_5"
    ],
@@ -22,20 +22,20 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0"
+            "ExtUtils::MakeMaker" : 0
          }
       },
       "configure" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0"
+            "ExtUtils::MakeMaker" : 0
          }
       },
       "runtime" : {
          "requires" : {
             "Lucy" : "0.001",
             "LucyX::Search::WildcardQuery" : "0.01",
-            "Search::Query" : "0.19",
-            "Test::More" : "0",
+            "Search::Query" : "0.21",
+            "Test::More" : 0,
             "perl" : "5.008003"
          }
       }
@@ -45,13 +45,13 @@
       "bugtracker" : {
          "web" : "http://rt.cpan.org/NoAuth/Bugs.html?Dist=Search-Query-Dialect-Lucy"
       },
-      "homepage" : "http://perl.peknet.com/wiki/SearchTools",
+      "homepage" : "https://github.com/karpet/search-query-dialect-lucy-perl",
       "license" : [
          "http://dev.perl.org/licenses/"
       ],
       "repository" : {
-         "url" : "http://svn.peknet.com/perl/Search-Query-Dialect-Lucy"
+         "url" : "https://github.com/karpet/search-query-dialect-lucy-perl"
       }
    },
-   "version" : "0.05"
+   "version" : "0.06"
 }
