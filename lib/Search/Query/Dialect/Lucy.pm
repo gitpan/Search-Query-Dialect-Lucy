@@ -17,7 +17,7 @@ use LucyX::Search::ProximityQuery;
 use LucyX::Search::NOTWildcardQuery;
 use LucyX::Search::WildcardQuery;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 __PACKAGE__->mk_accessors(
     qw(
@@ -220,7 +220,7 @@ sub stringify_clause {
     }
 
     # make sure we have a field
-    my $default_field 
+    my $default_field
         = $self->default_field
         || $self->parser->default_field
         || undef;    # not empty string or 0
@@ -513,7 +513,7 @@ FIELD: for my $name (@fields) {
                 croak "range of values must be a 2-element ARRAY";
             }
 
-            my $range_query = Lucy::Search::RangeQuery->new(
+            my $range_query = $field->range_query_class->new(
                 field         => $name,
                 lower_term    => $value->[0],
                 upper_term    => $value->[1],
@@ -532,7 +532,7 @@ FIELD: for my $name (@fields) {
                 croak "range of values must be a 2-element ARRAY";
             }
 
-            my $range_query = Lucy::Search::RangeQuery->new(
+            my $range_query = $field->range_query_class->new(
                 field         => $name,
                 lower_term    => $value->[0],
                 upper_term    => $value->[1],
@@ -628,7 +628,7 @@ FIELD: for my $name (@fields) {
                     while ( $n_values-- > 0 ) {
                         push(
                             @permutations,
-                            LucyX::Search::ProximityQuery->new(
+                            $field->proximity_query_class->new(
                                 field  => $name,
                                 terms  => [@values],    # new array
                                 within => $proximity,
@@ -649,7 +649,7 @@ FIELD: for my $name (@fields) {
                 else {
                     push(
                         @buf,
-                        LucyX::Search::ProximityQuery->new(
+                        $field->proximity_query_class->new(
                             field  => $name,
                             terms  => \@values,
                             within => $proximity,
@@ -658,13 +658,30 @@ FIELD: for my $name (@fields) {
                 }
             }
             else {
-                push(
-                    @buf,
-                    Lucy::Search::PhraseQuery->new(
-                        field => $name,
-                        terms => \@values,
-                    )
-                );
+                # invert
+                if ( $op eq '!:' ) {
+                    push(
+                        @buf,
+                        Lucy::Search::NOTQuery->new(
+                            negated_query => $field->phrase_query_class->new(
+                                field => $name,
+                                terms => \@values,
+                            )
+                        )
+                    );
+                }
+
+                # standard
+                else {
+
+                    push(
+                        @buf,
+                        $field->phrase_query_class->new(
+                            field => $name,
+                            terms => \@values,
+                        )
+                    );
+                }
             }
         }
         else {
@@ -686,7 +703,7 @@ FIELD: for my $name (@fields) {
                 if ( $prefix eq '-' ) {
                     push(
                         @buf,
-                        LucyX::Search::WildcardQuery->new(
+                        $field->wildcard_query_class->new(
                             field => $name,
                             term  => $term,
                         )
@@ -695,16 +712,19 @@ FIELD: for my $name (@fields) {
                 elsif ( $op =~ m/^\!/ ) {
                     push(
                         @buf,
-                        LucyX::Search::NOTWildcardQuery->new(
-                            field => $name,
-                            term  => $term,
+                        Lucy::Search::NOTQuery->new(
+                            negated_query =>
+                                $field->wildcard_query_class->new(
+                                field => $name,
+                                term  => $term,
+                                )
                         )
                     );
                 }
                 else {
                     push(
                         @buf,
-                        LucyX::Search::WildcardQuery->new(
+                        $field->wildcard_query_class->new(
                             field => $name,
                             term  => $term,
                         )
@@ -720,7 +740,7 @@ FIELD: for my $name (@fields) {
 
                 push(
                     @buf,
-                    LucyX::Search::WildcardQuery->new(
+                    $field->wildcard_query_class->new(
                         field => $name,
                         term  => $term,
                     )
@@ -732,7 +752,7 @@ FIELD: for my $name (@fields) {
                 push(
                     @buf,
                     Lucy::Search::NOTQuery->new(
-                        negated_query => Lucy::Search::TermQuery->new(
+                        negated_query => $field->term_query_class->new(
                             field => $name,
                             term  => $term,
                         )
@@ -744,7 +764,7 @@ FIELD: for my $name (@fields) {
             else {
                 push(
                     @buf,
-                    Lucy::Search::TermQuery->new(
+                    $field->term_query_class->new(
                         field => $name,
                         term  => $term,
                     )
