@@ -19,7 +19,7 @@ use LucyX::Search::WildcardQuery;
 use LucyX::Search::NullTermQuery;
 use LucyX::Search::AnyTermQuery;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 __PACKAGE__->mk_accessors(
     qw(
@@ -306,12 +306,20 @@ NAME: for my $name (@fields) {
 
         # invert
         elsif ( $op eq '!:' ) {
-            push(
-                @buf,
-                join( '',
-                    '(NOT ', $name, ':', qq/$quote$value$quote$proximity/,
-                    ')' )
-            );
+
+            # double negative
+            if ( $prefix eq '-' and $clause->{op} eq '!:' ) {
+                push @buf,
+                    join( '', $name, ':', qq/$quote$value$quote$proximity/ );
+            }
+            else {
+                push(
+                    @buf,
+                    join( '',
+                        '(NOT ', $name, ':', qq/$quote$value$quote$proximity/,
+                        ')' )
+                );
+            }
         }
 
         # range
@@ -509,14 +517,53 @@ FIELD: for my $name (@fields) {
             next FIELD;
         }
 
-        #$self->debug
-        #    and warn "as_lucy_query: "
-        #    . dump [ $name, $op, $prefix, $quote, $value ];
+        if ( $self->debug ) {
+            warn "as_lucy_query:\n";
+            warn dump(
+                {   name      => $name,
+                    op        => $op,
+                    prefix    => $prefix,
+                    quote     => $quote,
+                    value     => $value,
+                    clause_op => $clause->{op},
+                }
+            ) . "\n";
+        }
 
         # NULL
         if ( !defined $value ) {
             if ( $op eq '!:' ) {
-                push @buf, $field->anyterm_query_class->new( field => $name );
+                if ( $prefix eq '-' ) {
+
+                    # original op was inverted above by $prefix
+                    if ( $clause->{op} eq ':' ) {
+
+                        # appears to be a double negative, but necessary
+                        # to get the logic and serialization correct.
+                        # e.g. NOT foo:NULL
+                        push @buf,
+                            Lucy::Search::NOTQuery->new(
+                            negated_query =>
+                                $field->nullterm_query_class->new(
+                                field => $name
+                                )
+                            );
+
+                    }
+                    else {
+                        # true double negative
+                        # e.g. NOT foo!:NULL  => foo:NULL
+                        push @buf,
+                            $field->nullterm_query_class->new(
+                            field => $name );
+
+                    }
+
+                }
+                else {
+                    push @buf,
+                        $field->anyterm_query_class->new( field => $name );
+                }
             }
             else {
                 push @buf,
