@@ -18,10 +18,11 @@ no_index:
     - t
     - inc
 requires:
-  Lucy: '0.001'
+  Lucy: '0.001000'
   LucyX::Search::NullTermQuery: '0.002'
   LucyX::Search::WildcardQuery: '0.01'
-  Search::Query: '0.29001'
+  Moo: '0'
+  Search::Query: '0.300'
   Test::More: '0'
   perl: '5.008003'
 resources:
@@ -29,4 +30,4 @@ resources:
   homepage: https://github.com/karpet/search-query-dialect-lucy-perl
   license: http://dev.perl.org/licenses/
   repository: https://github.com/karpet/search-query-dialect-lucy-perl
-version: 0.190_01
+version: 0.190_02
